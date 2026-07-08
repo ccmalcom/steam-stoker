@@ -114,3 +114,10 @@ button {
     background-color: #0f0f0f69;
   }
 }
+
+.page { padding: 1rem; text-align: left; }
+.page label { display: block; margin: .5rem 0; }
+.page input, .page textarea { width: 100%; max-width: 480px; display: block; }
+.row { display: flex; gap: .5rem; align-items: center; }
+.page table { width: 100%; border-collapse: collapse; }
+.page td { padding: .25rem .5rem; border-bottom: 1px solid #4443; }
