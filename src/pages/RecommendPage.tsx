@@ -43,7 +43,9 @@ export default function RecommendPage() {
         <button onClick={go} disabled={busy}>{busy ? "Thinking…" : "Recommend"}</button>
       </div>
       {err && <p className="error">{err}</p>}
-      {run?.degraded && <p className="warn">No Anthropic key set — showing basic heuristic ranking only.</p>}
+      {run?.degraded && (run.rerankFailed
+        ? <p className="warn">Anthropic ranking failed — showing basic heuristic ranking only.</p>
+        : <p className="warn">No Anthropic key set — showing basic heuristic ranking only.</p>)}
       {run?.staleWarning && <p className="warn">No RAWG key — discovery may miss very recent releases.</p>}
       {run?.items.length === 0 && mode === "backlog" &&
         <p>Backlog zero! Every owned game has playtime past your threshold — try Discovery mode.</p>}

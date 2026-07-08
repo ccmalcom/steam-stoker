@@ -8,7 +8,7 @@ import { rerank, fallbackRank, type RecMode, type RecItem, type UnifiedCandidate
 
 export interface RecRun {
   id: number; created_at: number; mode: RecMode; mood_prompt: string | null;
-  items: RecItem[]; degraded: boolean; staleWarning: boolean;
+  items: RecItem[]; degraded: boolean; staleWarning: boolean; rerankFailed: boolean;
 }
 
 export async function runRecommendation(mode: RecMode, mood?: string): Promise<RecRun> {
@@ -41,17 +41,28 @@ export async function runRecommendation(mode: RecMode, mood?: string): Promise<R
                      stage1Reasons: [c.reason] });
   }
 
-  const degraded = !anthropicKey;
-  const items = degraded
-    ? fallbackRank(unified)
-    : await rerank({ apiKey: anthropicKey!, profileText: profile.profile_text, mood, candidates: unified, model });
+  let degraded = !anthropicKey;
+  let rerankFailed = false;
+  let items: RecItem[];
+  if (degraded) {
+    items = fallbackRank(unified);
+  } else {
+    try {
+      items = await rerank({ apiKey: anthropicKey!, profileText: profile.profile_text, mood, candidates: unified, model });
+    } catch (e) {
+      console.error("rerank failed, falling back to heuristic ranking:", e);
+      items = fallbackRank(unified);
+      degraded = true;
+      rerankFailed = true;
+    }
+  }
 
   const db = await getDb();
   const now = Math.floor(Date.now() / 1000);
   const res = await db.execute(
     "INSERT INTO recommendations (created_at, mode, mood_prompt, results_json) VALUES ($1,$2,$3,$4)",
     [now, mode, mood ?? null, JSON.stringify(items)]);
-  return { id: res.lastInsertId as number, created_at: now, mode, mood_prompt: mood ?? null, items, degraded, staleWarning };
+  return { id: res.lastInsertId as number, created_at: now, mode, mood_prompt: mood ?? null, items, degraded, staleWarning, rerankFailed };
 }
 
 export async function recordFeedback(
@@ -72,5 +83,5 @@ export async function latestRuns(limit = 10): Promise<RecRun[]> {
   const rows = await db.select<any[]>(
     "SELECT * FROM recommendations ORDER BY created_at DESC LIMIT $1", [limit]);
   return rows.map(r => ({ id: r.id, created_at: r.created_at, mode: r.mode, mood_prompt: r.mood_prompt,
-    items: JSON.parse(r.results_json), degraded: false, staleWarning: false }));
+    items: JSON.parse(r.results_json), degraded: false, staleWarning: false, rerankFailed: false }));
 }
