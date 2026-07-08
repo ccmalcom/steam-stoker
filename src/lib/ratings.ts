@@ -1,0 +1,36 @@
+import { getDb } from "./db";
+import type { GameStatus } from "./types";
+
+export function validateRating(rating: number | null): void {
+  if (rating === null) return;
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5)
+    throw new RangeError(`rating must be null or an integer 1-5, got ${rating}`);
+}
+
+/** Append-only history + current-value mirror, single call path (spec: rating_events). */
+export async function rateGame(gameId: number, rating: number | null, reviewText: string | null = null): Promise<void> {
+  validateRating(rating);
+  const db = await getDb();
+  const now = Math.floor(Date.now() / 1000);
+  await db.execute(
+    "INSERT INTO rating_events (game_id, rating, review_text, created_at) VALUES ($1,$2,$3,$4)",
+    [gameId, rating, reviewText, now]
+  );
+  await db.execute(
+    "UPDATE games SET user_rating = $1, user_review = COALESCE($2, user_review) WHERE id = $3",
+    [rating, reviewText, gameId]
+  );
+}
+
+export async function setGameStatus(gameId: number, status: GameStatus): Promise<void> {
+  const db = await getDb();
+  await db.execute("UPDATE games SET status = $1 WHERE id = $2", [status, gameId]);
+}
+
+export async function ratingHistory(gameId: number) {
+  const db = await getDb();
+  return db.select<{ rating: number | null; review_text: string | null; created_at: number }[]>(
+    "SELECT rating, review_text, created_at FROM rating_events WHERE game_id = $1 ORDER BY created_at DESC",
+    [gameId]
+  );
+}
