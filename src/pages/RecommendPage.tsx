@@ -22,6 +22,15 @@ export default function RecommendPage() {
     } catch (e) { setErr(String(e)); } finally { setBusy(false); }
   }
 
+  function removeItem(title: string) {
+    if (run) {
+      setRun({
+        ...run,
+        items: run.items.filter(item => item.title !== title)
+      });
+    }
+  }
+
   return (
     <div className="page">
       <h2>What should I play?</h2>
@@ -39,7 +48,7 @@ export default function RecommendPage() {
       {run?.items.length === 0 && mode === "backlog" &&
         <p>Backlog zero! Every owned game has playtime past your threshold — try Discovery mode.</p>}
       {run?.items.map(item =>
-        <RecCard key={item.title} recId={run.id} item={item} onFeedback={() => {}} />)}
+        <RecCard key={item.title} recId={run.id} item={item} onFeedback={() => removeItem(item.title)} />)}
       {!run && history.length > 0 && <>
         <h3>Previous runs</h3>
         {history.map(h => <div key={h.id} className="row">
