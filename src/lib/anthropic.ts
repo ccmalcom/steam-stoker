@@ -41,7 +41,15 @@ export async function claudeComplete(opts: {
     for (const block of body.content) {
       if (block.type !== "tool_use") continue;
       let content: string;
-      try { content = JSON.stringify(await handlers[block.name]?.(block.input) ?? { error: "unknown tool" }); }
+      try {
+        const handler = handlers[block.name];
+        if (handler === undefined) {
+          content = JSON.stringify({ error: "unknown tool" });
+        } else {
+          const result = await handler(block.input);
+          content = JSON.stringify(result === undefined ? null : result);
+        }
+      }
       catch (e) { content = JSON.stringify({ error: String(e) }); }
       results.push({ type: "tool_result", tool_use_id: block.id, content });
     }

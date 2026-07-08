@@ -35,6 +35,52 @@ describe("claudeComplete", () => {
     expect(out).toBe("done");
     expect(call).toBe(2);
   });
+  it("handler returning undefined is not misclassified as unknown tool", async () => {
+    let call = 0;
+    const out = await claudeComplete({
+      apiKey: "K", system: "s", user: "u",
+      tools: [{ name: "noOp", description: "", input_schema: { type: "object" } }],
+      handlers: { noOp: async () => undefined },
+      fetchFn: async (_url, init) => {
+        call++;
+        if (call === 1) return new Response(JSON.stringify({
+          content: [{ type: "tool_use", id: "t1", name: "noOp", input: {} }],
+          stop_reason: "tool_use",
+        }), { status: 200 });
+        const body = JSON.parse(init!.body as string);
+        const toolResult = body.messages.at(-1).content[0];
+        expect(toolResult.type).toBe("tool_result");
+        const parsedContent = JSON.parse(toolResult.content);
+        expect(parsedContent).toBe(null);
+        expect(parsedContent).not.toEqual({ error: "unknown tool" });
+        return textResponse("done");
+      },
+    });
+    expect(out).toBe("done");
+    expect(call).toBe(2);
+  });
+  it("unregistered tool name still produces unknown tool error", async () => {
+    let call = 0;
+    const out = await claudeComplete({
+      apiKey: "K", system: "s", user: "u",
+      tools: [{ name: "unknown", description: "", input_schema: { type: "object" } }],
+      handlers: {},
+      fetchFn: async (_url, init) => {
+        call++;
+        if (call === 1) return new Response(JSON.stringify({
+          content: [{ type: "tool_use", id: "t1", name: "unknown", input: {} }],
+          stop_reason: "tool_use",
+        }), { status: 200 });
+        const body = JSON.parse(init!.body as string);
+        const toolResult = body.messages.at(-1).content[0];
+        expect(toolResult.type).toBe("tool_result");
+        expect(JSON.parse(toolResult.content)).toEqual({ error: "unknown tool" });
+        return textResponse("done");
+      },
+    });
+    expect(out).toBe("done");
+    expect(call).toBe(2);
+  });
   it("throws AnthropicError on HTTP failure", async () => {
     await expect(claudeComplete({
       apiKey: "K", system: "s", user: "u",
