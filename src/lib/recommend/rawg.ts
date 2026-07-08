@@ -18,9 +18,14 @@ function mapResults(body: any): RawgGame[] {
 }
 
 export async function rawgSearch(key: string, query: string, fetchFn: FetchFn = tauriFetch): Promise<RawgGame[]> {
-  const res = await fetchFn(`${BASE}?key=${encodeURIComponent(key)}&search=${encodeURIComponent(query)}&page_size=10`);
-  if (!res.ok) return [];
-  return mapResults(await res.json());
+  try {
+    const res = await fetchFn(`${BASE}?key=${encodeURIComponent(key)}&search=${encodeURIComponent(query)}&page_size=10`);
+    if (!res.ok) return [];
+    return mapResults(await res.json());
+  } catch (err) {
+    console.error("rawgSearch failed:", err);
+    return [];
+  }
 }
 
 export async function rawgByGenre(
@@ -32,7 +37,12 @@ export async function rawgByGenre(
   if (opts.genres?.length) url += `&genres=${opts.genres.join(",")}`;
   if (opts.fromDate && opts.toDate) url += `&dates=${opts.fromDate},${opts.toDate}`;
   if (opts.ordering) url += `&ordering=${opts.ordering}`;
-  const res = await fetchFn(url);
-  if (!res.ok) return [];
-  return mapResults(await res.json());
+  try {
+    const res = await fetchFn(url);
+    if (!res.ok) return [];
+    return mapResults(await res.json());
+  } catch (err) {
+    console.error("rawgByGenre failed:", err);
+    return [];
+  }
 }

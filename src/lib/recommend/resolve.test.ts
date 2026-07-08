@@ -21,4 +21,16 @@ describe("resolveSteamApp", () => {
       new Response(JSON.stringify(body), { status: 200 }));
     expect(hit).toBeNull();
   });
+  it("prefers the exact match over an earlier loose match (best match, not first match)", async () => {
+    const loose = { items: [
+      { id: 1, name: "DOOM Eternal", price: { final: 1999 } },
+      { id: 2, name: "DOOM", price: { final: 999 } },
+    ]};
+    const hit = await resolveSteamApp("Doom", async () => new Response(JSON.stringify(loose), { status: 200 }));
+    expect(hit).toEqual({ appid: 2, name: "DOOM", priceCents: 999 });
+  });
+  it("returns null when fetchFn rejects (network failure), never throws", async () => {
+    await expect(resolveSteamApp("Elden Ring", async () => { throw new Error("network down"); }))
+      .resolves.toBeNull();
+  });
 });

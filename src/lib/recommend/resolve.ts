@@ -9,15 +9,27 @@ export function normalizeTitle(t: string): string {
 
 export async function resolveSteamApp(title: string, fetchFn: FetchFn = tauriFetch): Promise<SteamStoreHit | null> {
   const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(title)}&l=english&cc=US`;
-  const res = await fetchFn(url);
-  if (!res.ok) return null;
-  const body = await res.json();
-  const want = normalizeTitle(title);
-  for (const item of body?.items ?? []) {
-    const got = normalizeTitle(String(item.name));
-    if (got === want || got.startsWith(want) || want.startsWith(got)) {
-      return { appid: Number(item.id), name: String(item.name), priceCents: item.price?.final ?? null };
+  try {
+    const res = await fetchFn(url);
+    if (!res.ok) return null;
+    const body = await res.json();
+    const want = normalizeTitle(title);
+    const toHit = (item: any): SteamStoreHit => (
+      { appid: Number(item.id), name: String(item.name), priceCents: item.price?.final ?? null }
+    );
+
+    let best: { item: any; diff: number } | null = null;
+    for (const item of body?.items ?? []) {
+      const got = normalizeTitle(String(item.name));
+      if (got === want) return toHit(item);
+      if (got.startsWith(want) || want.startsWith(got)) {
+        const diff = Math.abs(got.length - want.length);
+        if (!best || diff < best.diff) best = { item, diff };
+      }
     }
+    return best ? toHit(best.item) : null;
+  } catch (err) {
+    console.error("resolveSteamApp failed:", err);
+    return null;
   }
-  return null;
 }

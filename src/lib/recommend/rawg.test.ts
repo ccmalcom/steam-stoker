@@ -26,4 +26,7 @@ describe("rawg client", () => {
   it("returns [] on HTTP error (degraded mode, non-fatal)", async () => {
     expect(await rawgSearch("RK", "x", async () => new Response("", { status: 500 }))).toEqual([]);
   });
+  it("returns [] when fetchFn rejects (network failure), never throws", async () => {
+    await expect(rawgSearch("RK", "x", async () => { throw new Error("network down"); })).resolves.toEqual([]);
+  });
 });
