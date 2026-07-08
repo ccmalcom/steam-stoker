@@ -8,18 +8,19 @@ export function validateRating(rating: number | null): void {
 }
 
 /** Append-only history + current-value mirror, single call path (spec: rating_events). */
-export async function rateGame(gameId: number, rating: number | null, reviewText: string | null = null): Promise<void> {
+export async function rateGame(gameId: number, rating: number | null, reviewText?: string | null): Promise<void> {
   validateRating(rating);
   const db = await getDb();
   const now = Math.floor(Date.now() / 1000);
   await db.execute(
     "INSERT INTO rating_events (game_id, rating, review_text, created_at) VALUES ($1,$2,$3,$4)",
-    [gameId, rating, reviewText, now]
+    [gameId, rating, reviewText ?? null, now]
   );
-  await db.execute(
-    "UPDATE games SET user_rating = $1, user_review = COALESCE($2, user_review) WHERE id = $3",
-    [rating, reviewText, gameId]
-  );
+  if (reviewText === undefined) {
+    await db.execute("UPDATE games SET user_rating = $1 WHERE id = $2", [rating, gameId]);
+  } else {
+    await db.execute("UPDATE games SET user_rating = $1, user_review = $2 WHERE id = $3", [rating, reviewText, gameId]);
+  }
 }
 
 export async function setGameStatus(gameId: number, status: GameStatus): Promise<void> {
