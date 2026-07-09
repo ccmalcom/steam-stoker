@@ -1,17 +1,19 @@
 import { useState } from "react";
+import RecommendPage from "./pages/RecommendPage";
 import LibraryPage from "./pages/LibraryPage";
 import SettingsPage from "./pages/SettingsPage";
 import "./App.css";
 
 export default function App() {
-  const [tab, setTab] = useState<"library" | "settings">("library");
+  const [tab, setTab] = useState<"recommend" | "library" | "settings">("recommend");
   return (
     <main>
       <nav className="row">
+        <button onClick={() => setTab("recommend")} disabled={tab === "recommend"}>Recommend</button>
         <button onClick={() => setTab("library")} disabled={tab === "library"}>Library</button>
         <button onClick={() => setTab("settings")} disabled={tab === "settings"}>Settings</button>
       </nav>
-      {tab === "library" ? <LibraryPage /> : <SettingsPage />}
+      {tab === "recommend" ? <RecommendPage /> : tab === "library" ? <LibraryPage /> : <SettingsPage />}
     </main>
   );
 }

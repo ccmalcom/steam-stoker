@@ -8,6 +8,7 @@ export default function LibraryPage() {
   const [games, setGames] = useState<(Game & { genres: string | null })[]>([]);
 
   useEffect(() => { listGames(filter).then(setGames); }, [filter]);
+  const reload = () => listGames(filter).then(setGames);
 
   return (
     <div className="page">
@@ -25,7 +26,7 @@ export default function LibraryPage() {
       </div>
       {games.length === 0
         ? <p>No games yet — set your Steam key in Settings and hit Sync.</p>
-        : <table><tbody>{games.map(g => <GameRow key={g.id} game={g} genres={g.genres} />)}</tbody></table>}
+        : <table><tbody>{games.map(g => <GameRow key={g.id} game={g} genres={g.genres} onChanged={reload} />)}</tbody></table>}
     </div>
   );
 }
