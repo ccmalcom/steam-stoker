@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { addManualGame, validateManualInput, type ManualGameInput } from "../lib/manual";
+import StarRating from "./StarRating";
 
 export default function ManualAddForm({ onAdded }: { onAdded: () => void }) {
   const [input, setInput] = useState<ManualGameInput>({
@@ -27,11 +28,11 @@ export default function ManualAddForm({ onAdded }: { onAdded: () => void }) {
         </select>
         <input type="number" min={0} placeholder="Hours" value={input.playtimeHours || ""}
           onChange={e => setInput({ ...input, playtimeHours: Number(e.target.value) })} style={{ width: "5rem" }} />
-        <select value={input.rating ?? ""} onChange={e =>
-          setInput({ ...input, rating: e.target.value ? Number(e.target.value) : null })}>
-          <option value="">no rating</option>
-          {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{"★".repeat(n)}</option>)}
-        </select>
+        <span className="row" style={{ gap: 0 }}>
+          <StarRating value={input.rating ?? 0} onChange={n => setInput({ ...input, rating: n })} showValue />
+          {input.rating !== null &&
+            <button type="button" className="star-clear" onClick={() => setInput({ ...input, rating: null })} title="Clear rating">clear</button>}
+        </span>
       </div>
       <textarea placeholder="Review (optional)" rows={2} value={input.review ?? ""}
         onChange={e => setInput({ ...input, review: e.target.value || null })} />

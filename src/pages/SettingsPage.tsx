@@ -3,7 +3,7 @@ import { getSetting, setSetting, getLibraryPaths, setLibraryPaths } from "../lib
 import { runFullSync } from "../lib/steam/sync";
 import { enrichPending } from "../lib/steam/enrich";
 import { resolveVanityUrl } from "../lib/steam/webapi";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { openExternal } from "../lib/openExternal";
 
 export default function SettingsPage() {
   const [steamKey, setSteamKey] = useState("");
@@ -66,7 +66,7 @@ export default function SettingsPage() {
   return (
     <div className="page">
       <h2>Settings</h2>
-      <label>Steam Web API key <a href="https://steamcommunity.com/dev/apikey" onClick={e => { e.preventDefault(); openUrl("https://steamcommunity.com/dev/apikey"); }}>get one</a>
+      <label>Steam Web API key <a href="https://steamcommunity.com/dev/apikey" onClick={e => { e.preventDefault(); openExternal("https://steamcommunity.com/dev/apikey"); }}>get one</a>
         <input type="password" value={steamKey} onChange={e => setSteamKey(e.target.value)} /></label>
       <label>SteamID64
         <input value={steamId} onChange={e => setSteamId(e.target.value)} /></label>
@@ -81,7 +81,7 @@ export default function SettingsPage() {
         <input type="password" value={anthropicKey} onChange={e => setAnthropicKey(e.target.value)} /></label>
       <label>Anthropic model
         <input value={anthropicModel} onChange={e => setAnthropicModel(e.target.value)} placeholder="claude-sonnet-5" /></label>
-      <label>RAWG API key <a href="https://rawg.io/apidocs" onClick={e => { e.preventDefault(); openUrl("https://rawg.io/apidocs"); }}>get one</a> (fresh-release lookups in discovery)
+      <label>RAWG API key <a href="https://rawg.io/apidocs" onClick={e => { e.preventDefault(); openExternal("https://rawg.io/apidocs"); }}>get one</a> (fresh-release lookups in discovery)
         <input type="password" value={rawgKey} onChange={e => setRawgKey(e.target.value)} /></label>
       <label>Backlog playtime threshold (hours)
         <input type="number" min="0" step="0.5" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="2" />

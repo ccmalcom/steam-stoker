@@ -16,15 +16,18 @@ export async function saveProfile(
   const db = await getDb();
   // No manual BEGIN/COMMIT: @tauri-apps/plugin-sql runs each execute() on a separate
   // pooled connection, so a transaction split across calls fails with "cannot commit -
-  // no transaction is active". Run sequentially instead. The brief window where no row
-  // is is_current is self-healing — the next regenerate re-establishes exactly one.
-  await db.execute("UPDATE taste_profile SET is_current = 0 WHERE is_current = 1");
+  // no transaction is active". Instead: insert the new row as not-current, then flip
+  // is_current in a single atomic UPDATE that sets it for the new id and clears all others.
+  // This is last-writer-wins and never leaves a window where no row is current (the prior
+  // current stays current until the one UPDATE swaps them).
   const res = await db.execute(
     `INSERT INTO taste_profile (generated_at, profile_json, profile_text, trigger_reason, is_current)
-     VALUES ($1,$2,$3,$4,1)`,
+     VALUES ($1,$2,$3,$4,0)`,
     [Math.floor(Date.now() / 1000), JSON.stringify(p.profile_json), p.profile_text, trigger]
   );
-  return res.lastInsertId as number;
+  const id = res.lastInsertId as number;
+  await db.execute("UPDATE taste_profile SET is_current = CASE WHEN id = $1 THEN 1 ELSE 0 END", [id]);
+  return id;
 }
 
 function rowToProfile(r: any): StoredProfile {

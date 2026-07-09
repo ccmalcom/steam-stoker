@@ -35,7 +35,7 @@ export default function GameRow({ game, genres, onChanged }:
         <td>
           <span className="row" style={{ gap: 0 }}>
             <StarRating value={rating ?? 0} onChange={setStars} showValue />
-            {rating !== null && <span className="star-clear" onClick={() => setStars(rating)} title="Clear rating">clear</span>}
+            {rating !== null && <button type="button" className="star-clear" onClick={() => setStars(rating)} title="Clear rating">clear</button>}
           </span>
           {ratingError && <div style={{ color: "red", fontSize: "0.8em" }}>{ratingError}</div>}
         </td>

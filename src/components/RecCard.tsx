@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import type { RecItem } from "../lib/recommend/rerank";
 import { launchGame } from "../lib/games";
 import { setGameStatus } from "../lib/ratings";
 import { addManualGame } from "../lib/manual";
 import { recordFeedback } from "../lib/recommend/run";
+import { openExternal } from "../lib/openExternal";
 import StarRating from "./StarRating";
 
 export default function RecCard({ recId, item, onFeedback }:
@@ -22,8 +22,8 @@ export default function RecCard({ recId, item, onFeedback }:
     if (item.game_id) await setGameStatus(item.game_id, kind === "dismissed_wont_run" ? "wont_run" : "not_interested");
     onFeedback();
   }
-  async function store() {
-    if (item.steam_appid) await openUrl(`https://store.steampowered.com/app/${item.steam_appid}`);
+  function store() {
+    if (item.steam_appid) openExternal(`https://store.steampowered.com/app/${item.steam_appid}`);
   }
   // "Already played" for a discovery pick not yet tracked: add it to the library as a
   // finished, rated game (so it feeds taste and is excluded from future discovery).

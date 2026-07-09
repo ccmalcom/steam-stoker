@@ -47,8 +47,8 @@ export default function ProfilePage() {
       </> : <p>No profile yet — sync your library first.</p>}
       <h3>History</h3>
       <ul>{history.map(h =>
-        <li key={h.id}><a onClick={() => setViewing(h)} style={{ cursor: "pointer" }}>
-          {when(h.generated_at)} — {h.trigger_reason}</a></li>)}</ul>
+        <li key={h.id}><button type="button" className="linklike" onClick={() => setViewing(h)}>
+          {when(h.generated_at)} — {h.trigger_reason}</button></li>)}</ul>
     </div>
   );
 }

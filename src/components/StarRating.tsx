@@ -13,8 +13,8 @@ export default function StarRating(
   return (
     <span
       className={`stars${onChange ? " interactive" : ""}`}
-      role={onChange ? "slider" : undefined}
-      aria-valuenow={value} aria-valuemin={0.5} aria-valuemax={5}
+      role="img"
+      aria-label={value ? `Rated ${fmt(value)} of 5` : "Not rated"}
       onMouseLeave={() => setHover(0)}
     >
       {[1, 2, 3, 4, 5].map(i => {

@@ -134,8 +134,11 @@ button {
 .star-half { position: absolute; top: 0; height: 100%; width: 50%; padding: 0; margin: 0; background: transparent; border: 0; cursor: pointer; }
 .star-half.left { left: 0; }
 .star-half.right { right: 0; }
-.star-clear { cursor: pointer; opacity: .45; font-size: .75em; margin-left: .5em; }
+.star-clear { cursor: pointer; opacity: .45; font-size: .75em; margin-left: .5em;
+  background: none; border: 0; padding: 0; color: inherit; }
 .star-clear:hover { opacity: .9; text-decoration: underline; }
+.linklike { background: none; border: 0; padding: 0; color: #6ab7ff; cursor: pointer; font: inherit; text-align: left; }
+.linklike:hover { text-decoration: underline; }
 .muted { opacity: .45; }
 .hint { font-size: .85em; opacity: .7; line-height: 1.5; }
 .hint code { font-size: .95em; opacity: .9; }

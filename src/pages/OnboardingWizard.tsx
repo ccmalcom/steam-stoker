@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { openExternal } from "../lib/openExternal";
 import { type WizardStep, nextStep, completeOnboarding } from "../lib/onboarding";
 import { getSetting, setSetting, setLibraryPaths } from "../lib/settings";
 import { resolveVanityUrl } from "../lib/steam/webapi";
@@ -61,12 +61,12 @@ export default function OnboardingWizard({ onFinished }: { onFinished: () => voi
       {step === "welcome" && <><p>Stoker keeps you fueled with the next game — from your backlog or beyond. Setup takes ~3 minutes.</p>
         <button onClick={advance}>Start</button></>}
       {step === "steam_key" && <><p>1/5 — Paste your Steam Web API key.
-        <a href="https://steamcommunity.com/dev/apikey" onClick={e => { e.preventDefault(); openUrl("https://steamcommunity.com/dev/apikey"); }}> Get one here</a> (any domain value works, e.g. "localhost").</p>
+        <a href="https://steamcommunity.com/dev/apikey" onClick={e => { e.preventDefault(); openExternal("https://steamcommunity.com/dev/apikey"); }}> Get one here</a> (any domain value works, e.g. "localhost").</p>
         <input type="password" value={key} onChange={e => setKey(e.target.value)} />
         <button onClick={saveKey} disabled={!key.trim()}>Next</button></>}
       {step === "steam_id" && <><p>2/5 — Your SteamID64 or custom profile (vanity) name.</p>
         <p className="hint">
-          <a href="https://steamcommunity.com/my" onClick={e => { e.preventDefault(); openUrl("https://steamcommunity.com/my"); }}>Open my Steam profile →</a>
+          <a href="https://steamcommunity.com/my" onClick={e => { e.preventDefault(); openExternal("https://steamcommunity.com/my"); }}>Open my Steam profile →</a>
           {" "}then look at the URL in your browser:<br />
           • <code>steamcommunity.com/profiles/<b>7656119…</b></code> → paste that 17-digit number.<br />
           • <code>steamcommunity.com/id/<b>yourname</b></code> → paste just <code>yourname</code> and we'll resolve it.</p>

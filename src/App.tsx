@@ -10,21 +10,26 @@ import "./App.css";
 export default function App() {
   const [tab, setTab] = useState<"recommend" | "library" | "profile" | "settings">("recommend");
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
-  useEffect(() => { isOnboardingComplete().then(setOnboarded); }, []);
 
   useEffect(() => {
-    if (!onboarded) return;
-    (async () => {
-      try {
-        const { runFullSync } = await import("./lib/steam/sync");
-        const { enrichPending } = await import("./lib/steam/enrich");
-        const { regenerateProfile } = await import("./lib/profile/store");
-        await runFullSync();
-        await regenerateProfile("sync");
-        enrichPending({ limit: 50 });   // fire and forget
-      } catch { /* offline or keyless: app remains usable on last-synced data (spec degraded mode) */ }
-    })();
-  }, [onboarded]);
+    isOnboardingComplete().then(done => {
+      setOnboarded(done);
+      // Auto-sync only when the app launches *already* onboarded — not on the wizard's
+      // false→true transition, since the wizard already runs a full sync + profile build.
+      if (done) launchSync();
+    });
+  }, []);
+
+  async function launchSync() {
+    try {
+      const { runFullSync } = await import("./lib/steam/sync");
+      const { enrichPending } = await import("./lib/steam/enrich");
+      const { regenerateProfile } = await import("./lib/profile/store");
+      await runFullSync();
+      await regenerateProfile("sync");
+      enrichPending({ limit: 50 });   // fire and forget
+    } catch { /* offline or keyless: app remains usable on last-synced data (spec degraded mode) */ }
+  }
 
   if (onboarded === null) return null;
   if (!onboarded) return <OnboardingWizard onFinished={() => setOnboarded(true)} />;
