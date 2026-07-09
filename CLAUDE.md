@@ -15,6 +15,7 @@ Implementation is being driven by a sequence of plans in `docs/superpowers/plans
 - `npm run dev` — Vite dev server only (frontend, no Tauri shell)
 - `npm run tauri dev` — full Tauri app (required for any manual verification touching SQLite, HTTP, or filesystem access)
 - `npm run build` — `tsc` typecheck + Vite production build
+- Inspect the live app DB (no `sqlite3` CLI; Python 3.14 is present): `python -c "import sqlite3; ..."` against `%APPDATA%\dev.chase.stoker\stoker.db`
 
 There is no lint script configured.
 
@@ -35,3 +36,13 @@ Key tables: `games` (one row per owned/manual game; `status` is `active | not_in
 ## Testing conventions
 
 Every `src/lib` module with logic worth testing has a co-located `*.test.ts`. Tests inject a fake `fetchFn` (returning a `Response`) rather than mocking `fetch` globally, and inject fake data rather than hitting `getDb()` where the function under test is pure. Follow this pattern for new modules: keep the core function pure/injectable, test it directly, and let the thin Tauri-wired wrapper go unverified by unit tests (verify those manually via `npm run tauri dev`).
+
+## Tauri runtime gotchas (unit tests can't catch these)
+
+The fake `fetchFn`/`getDb` injection means unit tests pass while these runtime-only bugs slip through — verify wired paths live via `npm run tauri dev`:
+
+- **Settings read as empty string, not null.** The settings UI stores blank fields as `""`, so `getSetting(k) ?? default` returns `""` (nullish `??` doesn't catch it). Coerce empty/NaN explicitly for any setting with a meaningful default — this silently broke `anthropic_model` (HTTP 400) and `playtime_threshold_hours` (empty backlog).
+- **No manual SQL transactions.** `@tauri-apps/plugin-sql` pools connections, so `BEGIN`/`COMMIT` split across `execute()` calls fails ("cannot commit — no transaction is active"). Use a single atomic statement instead (e.g. `UPDATE ... SET is_current = CASE WHEN id = $1 THEN 1 ELSE 0 END`).
+- **Anthropic calls from the webview need `anthropic-dangerous-direct-browser-access: true`** or they 401 (the webview sends a browser `Origin`). Set in `src/lib/anthropic.ts`.
+- **External links:** use the `openExternal()` helper (`src/lib/openExternal.ts`) — `<a target="_blank">` is inert in the webview. Every domain also needs an `opener:allow-open-url` entry in `src-tauri/capabilities/default.json`.
+- **Restart required:** changes to `src-tauri/capabilities/*`, `tauri.conf.json`, or Rust need a full app restart/rebuild — HMR won't pick them up.
