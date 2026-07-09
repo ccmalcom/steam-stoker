@@ -40,7 +40,7 @@ export default function RecommendPage() {
             {m === "backlog" ? "My backlog" : m === "mixed" ? "Mix" : "New games"}</button>)}
         <input placeholder="Mood (optional): short & chill, big RPG, co-op…"
           value={mood} onChange={e => setMood(e.target.value)} style={{ flex: 1 }} />
-        <button onClick={go} disabled={busy}>{busy ? "Thinking…" : "Recommend"}</button>
+        <button className="primary" onClick={go} disabled={busy}>{busy ? "Thinking…" : "Recommend"}</button>
       </div>
       {err && <p className="error">{err}</p>}
       {run?.degraded && (run.rerankFailed
@@ -49,8 +49,8 @@ export default function RecommendPage() {
       {run?.staleWarning && <p className="warn">No RAWG key — discovery may miss very recent releases.</p>}
       {run?.items.length === 0 && mode === "backlog" &&
         <p>Backlog zero! Every owned game has playtime past your threshold — try Discovery mode.</p>}
-      {run?.items.map(item =>
-        <RecCard key={item.title} recId={run.id} item={item} onFeedback={() => removeItem(item.title)} />)}
+      {run?.items.map((item, i) =>
+        <RecCard key={item.title} recId={run.id} item={item} hero={i === 0} onFeedback={() => removeItem(item.title)} />)}
       {!run && history.length > 0 && <>
         <h3>Previous runs</h3>
         {history.map(h => <div key={h.id} className="row">

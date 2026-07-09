@@ -59,11 +59,11 @@ export default function OnboardingWizard({ onFinished }: { onFinished: () => voi
     <div className="page">
       <h2>Welcome to Stoker</h2>
       {step === "welcome" && <><p>Stoker keeps you fueled with the next game — from your backlog or beyond. Setup takes ~3 minutes.</p>
-        <button onClick={advance}>Start</button></>}
+        <button className="primary" onClick={advance}>Start</button></>}
       {step === "steam_key" && <><p>1/5 — Paste your Steam Web API key.
         <a href="https://steamcommunity.com/dev/apikey" onClick={e => { e.preventDefault(); openExternal("https://steamcommunity.com/dev/apikey"); }}> Get one here</a> (any domain value works, e.g. "localhost").</p>
         <input type="password" value={key} onChange={e => setKey(e.target.value)} />
-        <button onClick={saveKey} disabled={!key.trim()}>Next</button></>}
+        <button className="primary" onClick={saveKey} disabled={!key.trim()}>Next</button></>}
       {step === "steam_id" && <><p>2/5 — Your SteamID64 or custom profile (vanity) name.</p>
         <p className="hint">
           <a href="https://steamcommunity.com/my" onClick={e => { e.preventDefault(); openExternal("https://steamcommunity.com/my"); }}>Open my Steam profile →</a>
@@ -71,18 +71,18 @@ export default function OnboardingWizard({ onFinished }: { onFinished: () => voi
           • <code>steamcommunity.com/profiles/<b>7656119…</b></code> → paste that 17-digit number.<br />
           • <code>steamcommunity.com/id/<b>yourname</b></code> → paste just <code>yourname</code> and we'll resolve it.</p>
         <input value={idInput} onChange={e => setIdInput(e.target.value)} placeholder="7656119… or yourname" />
-        <button onClick={saveId} disabled={!idInput.trim()}>Next</button></>}
+        <button className="primary" onClick={saveId} disabled={!idInput.trim()}>Next</button></>}
       {step === "folders" && <><p>3/5 — Steam library folders {paths.length ? "(edit if wrong)" : "(click to auto-discover)"}:</p>
         <textarea rows={3} value={paths.join("\n")}
           onChange={e => setPaths(e.target.value.split("\n").map(p => p.trim()).filter(Boolean))} />
-        <button onClick={confirmFolders}>{paths.length ? "Next" : "Discover"}</button></>}
+        <button className="primary" onClick={confirmFolders}>{paths.length ? "Next" : "Discover"}</button></>}
       {step === "sync" && <><p>4/5 — Import your library.</p>
-        <button onClick={doSync}>Sync now</button></>}
+        <button className="primary" onClick={doSync}>Sync now</button></>}
       {step === "sprint" && <><h3>5/5 — Teach Stoker your taste</h3>
         <RatingSprint mode="top" onDone={advance} /></>}
       {step === "bounced" && <RatingSprint mode="search" onDone={advance} />}
       {step === "done" && <><p>All set. Your taste profile is built from {`{playtime + your ratings}`} — head to Recommendations.</p>
-        <button onClick={finish}>Open Stoker</button></>}
+        <button className="primary" onClick={finish}>Open Stoker</button></>}
       <p>{status}</p>
     </div>
   );

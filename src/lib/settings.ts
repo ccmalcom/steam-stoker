@@ -3,7 +3,7 @@ import { getDb } from "./db";
 export const SETTINGS_KEYS = [
   "steam_api_key", "steam_id64", "anthropic_api_key", "rawg_api_key",
   "library_paths", "taste_notes", "last_sync_at", "onboarding_complete",
-  "playtime_threshold_hours", "anthropic_model",
+  "playtime_threshold_hours", "anthropic_model", "theme",
 ] as const;
 
 export async function getSetting(key: string): Promise<string | null> {

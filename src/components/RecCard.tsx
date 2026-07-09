@@ -7,8 +7,8 @@ import { recordFeedback } from "../lib/recommend/run";
 import { openExternal } from "../lib/openExternal";
 import StarRating from "./StarRating";
 
-export default function RecCard({ recId, item, onFeedback }:
-  { recId: number; item: RecItem; onFeedback: () => void }) {
+export default function RecCard({ recId, item, onFeedback, hero }:
+  { recId: number; item: RecItem; onFeedback: () => void; hero?: boolean }) {
   const [rating, setRating] = useState(false);   // showing the "already played" star picker
   const [saving, setSaving] = useState(false);
 
@@ -39,7 +39,7 @@ export default function RecCard({ recId, item, onFeedback }:
   }
 
   return (
-    <div className="card">
+    <div className={hero ? "card rec-hero" : "card"}>
       <div className="card-head">
         <strong>{item.title}</strong>
         <span className="origin">{item.origin === "discovery"
@@ -55,7 +55,7 @@ export default function RecCard({ recId, item, onFeedback }:
           </div>
         : <div className="row">
             {item.origin === "backlog" && item.installed && item.steam_appid
-              ? <button onClick={launch}>▶ Launch</button> : null}
+              ? <button className="primary" onClick={launch}>▶ Launch</button> : null}
             {item.origin === "backlog" && !item.installed
               ? <button onClick={store}>Install via Steam</button> : null}
             {item.origin === "discovery" && item.steam_appid

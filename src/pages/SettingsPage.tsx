@@ -4,8 +4,10 @@ import { runFullSync } from "../lib/steam/sync";
 import { enrichPending } from "../lib/steam/enrich";
 import { resolveVanityUrl } from "../lib/steam/webapi";
 import { openExternal } from "../lib/openExternal";
+import { THEMES, THEME_LABELS, THEME_SWATCH, applyTheme, isTheme, DEFAULT_THEME, type Theme } from "../lib/theme";
 
 export default function SettingsPage() {
+  const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
   const [steamKey, setSteamKey] = useState("");
   const [steamId, setSteamId] = useState("");
   const [vanity, setVanity] = useState("");
@@ -28,8 +30,17 @@ export default function SettingsPage() {
       setRawgKey((await getSetting("rawg_api_key")) ?? "");
       setThreshold((await getSetting("playtime_threshold_hours")) ?? "");
       setLastSync(await getSetting("last_sync_at"));
+      const t = await getSetting("theme");
+      if (isTheme(t)) setTheme(t);
     })();
   }, []);
+
+  // Persist and paint immediately — theme changes should feel instant, no Save needed.
+  async function chooseTheme(t: Theme) {
+    setTheme(t);
+    applyTheme(t);
+    await setSetting("theme", t);
+  }
 
   async function save() {
     await setSetting("steam_api_key", steamKey.trim());
@@ -66,6 +77,20 @@ export default function SettingsPage() {
   return (
     <div className="page">
       <h2>Settings</h2>
+
+      <h3>Appearance</h3>
+      <label>Theme
+        <div className="theme-picker" role="group" aria-label="Theme">
+          {THEMES.map(t => (
+            <button key={t} type="button" className="theme-swatch"
+              aria-pressed={theme === t} onClick={() => chooseTheme(t)}>
+              <span className="dot" style={{ background: THEME_SWATCH[t] }} />{THEME_LABELS[t]}
+            </button>
+          ))}
+        </div>
+      </label>
+
+      <h3>Steam</h3>
       <label>Steam Web API key <a href="https://steamcommunity.com/dev/apikey" onClick={e => { e.preventDefault(); openExternal("https://steamcommunity.com/dev/apikey"); }}>get one</a>
         <input type="password" value={steamKey} onChange={e => setSteamKey(e.target.value)} /></label>
       <label>SteamID64
@@ -88,7 +113,7 @@ export default function SettingsPage() {
         <span className="hint">games under this playtime count as backlog</span></label>
 
       <div className="row">
-        <button onClick={save}>Save</button>
+        <button className="primary" onClick={save}>Save</button>
         <button onClick={sync} disabled={busy}>Sync now</button>
       </div>
       <p className="hint">Last sync: {lastSync ? new Date(Number(lastSync) * 1000).toLocaleString() : "never"}</p>

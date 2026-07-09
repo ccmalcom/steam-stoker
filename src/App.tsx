@@ -5,13 +5,26 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import { isOnboardingComplete } from "./lib/onboarding";
+import { getSetting } from "./lib/settings";
+import { applyTheme, isTheme, DEFAULT_THEME } from "./lib/theme";
 import "./App.css";
 
+type Tab = "recommend" | "library" | "profile" | "settings";
+const TABS: { id: Tab; label: string }[] = [
+  { id: "recommend", label: "Recommend" },
+  { id: "library", label: "Library" },
+  { id: "profile", label: "Profile" },
+  { id: "settings", label: "Settings" },
+];
+
 export default function App() {
-  const [tab, setTab] = useState<"recommend" | "library" | "profile" | "settings">("recommend");
+  const [tab, setTab] = useState<Tab>("recommend");
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Apply the saved accent theme before first paint of the app UI. `||` (not `??`)
+    // guards the empty-string settings trap; unknown/blank values fall back to default.
+    getSetting("theme").then(v => applyTheme(isTheme(v) ? v : DEFAULT_THEME));
     isOnboardingComplete().then(done => {
       setOnboarded(done);
       // Auto-sync only when the app launches *already* onboarded — not on the wizard's
@@ -34,15 +47,22 @@ export default function App() {
   if (onboarded === null) return null;
   if (!onboarded) return <OnboardingWizard onFinished={() => setOnboarded(true)} />;
   return (
-    <main>
-      <nav className="row">
-        <button onClick={() => setTab("recommend")} disabled={tab === "recommend"}>Recommend</button>
-        <button onClick={() => setTab("library")} disabled={tab === "library"}>Library</button>
-        <button onClick={() => setTab("profile")} disabled={tab === "profile"}>Profile</button>
-        <button onClick={() => setTab("settings")} disabled={tab === "settings"}>Settings</button>
-      </nav>
-      {tab === "recommend" ? <RecommendPage /> : tab === "library" ? <LibraryPage />
-        : tab === "profile" ? <ProfilePage /> : <SettingsPage />}
-    </main>
+    <div className="app">
+      <header className="appbar">
+        <span className="brand">Stoker</span>
+        <nav className="tabs">
+          {TABS.map(t => (
+            <button key={t.id} className={tab === t.id ? "tab on" : "tab"}
+              aria-current={tab === t.id ? "page" : undefined} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+      <main>
+        {tab === "recommend" ? <RecommendPage /> : tab === "library" ? <LibraryPage />
+          : tab === "profile" ? <ProfilePage /> : <SettingsPage />}
+      </main>
+    </div>
   );
 }
