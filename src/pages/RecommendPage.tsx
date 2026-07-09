@@ -19,7 +19,7 @@ export default function RecommendPage() {
     try {
       await regenerateProfile("manual");           // profile always fresh at rec time
       setRun(await runRecommendation(mode, mood.trim() || undefined));
-    } catch (e) { setErr(String(e)); } finally { setBusy(false); }
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }
 
   function removeItem(title: string) {

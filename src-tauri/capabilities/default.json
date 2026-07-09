@@ -28,7 +28,8 @@
       "allow": [
         { "url": "steam://*" },
         { "url": "https://store.steampowered.com/*" },
-        { "url": "https://steamcommunity.com/*" }
+        { "url": "https://steamcommunity.com/*" },
+        { "url": "https://rawg.io/*" }
       ]
     }
   ]

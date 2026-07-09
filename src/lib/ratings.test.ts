@@ -3,11 +3,11 @@ import { validateRating, rateGame } from "./ratings";
 import * as dbModule from "./db";
 
 describe("validateRating", () => {
-  it("accepts null and integers 1-5", () => {
-    for (const r of [null, 1, 2, 3, 4, 5]) expect(() => validateRating(r)).not.toThrow();
+  it("accepts null and half-steps 0.5-5", () => {
+    for (const r of [null, 0.5, 1, 2.5, 3.5, 4, 4.5, 5]) expect(() => validateRating(r)).not.toThrow();
   });
-  it("rejects 0, 6, floats, NaN", () => {
-    for (const r of [0, 6, 3.5, NaN]) expect(() => validateRating(r as number)).toThrow(RangeError);
+  it("rejects 0, out-of-range, non-half floats, NaN", () => {
+    for (const r of [0, 0.25, 3.7, 5.5, 6, NaN]) expect(() => validateRating(r as number)).toThrow(RangeError);
   });
 });
 

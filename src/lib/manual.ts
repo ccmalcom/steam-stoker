@@ -15,8 +15,8 @@ export function validateManualInput(input: ManualGameInput): string[] {
   const errs: string[] = [];
   if (!input.title.trim()) errs.push("title is required");
   if (input.playtimeHours < 0 || !Number.isFinite(input.playtimeHours)) errs.push("playtime must be >= 0");
-  if (input.rating !== null && (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5))
-    errs.push("rating must be 1-5");
+  if (input.rating !== null && (input.rating < 0.5 || input.rating > 5 || !Number.isInteger(input.rating * 2)))
+    errs.push("rating must be a half-step between 0.5 and 5");
   return errs;
 }
 

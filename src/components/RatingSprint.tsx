@@ -3,6 +3,7 @@ import type { Game } from "../lib/types";
 import { rateGame } from "../lib/ratings";
 import { sprintGames } from "../lib/onboarding";
 import { listGames } from "../lib/games";
+import StarRating from "./StarRating";
 
 /** mode "top": top-playtime unrated. mode "search": find games you bounced off. */
 export default function RatingSprint({ mode, onDone }: { mode: "top" | "search"; onDone: () => void }) {
@@ -32,9 +33,7 @@ export default function RatingSprint({ mode, onDone }: { mode: "top" | "search";
       <table><tbody>
         {games.map(g => <tr key={g.id} className={rated.has(g.id) ? "muted" : ""}>
           <td>{g.title}</td><td>{(g.playtime_minutes / 60).toFixed(0)} h</td>
-          <td>{[1, 2, 3, 4, 5].map(n =>
-            <span key={n} className="star" onClick={() => rate(g, n)}>
-              {n <= (rated.get(g.id) ?? 0) ? "★" : "☆"}</span>)}</td>
+          <td><StarRating value={rated.get(g.id) ?? 0} onChange={n => rate(g, n)} showValue /></td>
         </tr>)}
       </tbody></table>
       <button onClick={onDone}>{rated.size ? `Done (${rated.size} rated)` : "Skip"}</button>
