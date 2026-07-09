@@ -17,12 +17,17 @@ export default function ProfilePage() {
   useEffect(() => { load(); }, []);
 
   async function saveNotes() {
-    await setSetting("taste_notes", notes);
-    await regenerateProfile("manual");   // notes are top-tier signal; must take effect immediately
-    await load();
-    setMsg("Notes saved, profile regenerated.");
+    try {
+      await setSetting("taste_notes", notes);
+      await regenerateProfile("manual");   // notes are top-tier signal; must take effect immediately
+      await load();
+      setMsg("Notes saved, profile regenerated.");
+    } catch (e) { setMsg(`Error: ${String(e)}`); }
   }
-  async function regen() { await regenerateProfile("manual"); await load(); setMsg("Regenerated."); }
+  async function regen() {
+    try { await regenerateProfile("manual"); await load(); setMsg("Regenerated."); }
+    catch (e) { setMsg(`Error: ${String(e)}`); }
+  }
 
   const shown = viewing ?? profile;
   const when = (t: number) => new Date(t * 1000).toLocaleString();

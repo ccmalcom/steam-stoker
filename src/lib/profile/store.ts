@@ -14,20 +14,17 @@ export async function saveProfile(
   p: { profile_json: ProfileJson; profile_text: string }, trigger: ProfileTrigger
 ): Promise<number> {
   const db = await getDb();
-  await db.execute("BEGIN");
-  try {
-    await db.execute("UPDATE taste_profile SET is_current = 0 WHERE is_current = 1");
-    const res = await db.execute(
-      `INSERT INTO taste_profile (generated_at, profile_json, profile_text, trigger_reason, is_current)
-       VALUES ($1,$2,$3,$4,1)`,
-      [Math.floor(Date.now() / 1000), JSON.stringify(p.profile_json), p.profile_text, trigger]
-    );
-    await db.execute("COMMIT");
-    return res.lastInsertId as number;
-  } catch (e) {
-    await db.execute("ROLLBACK");
-    throw e;
-  }
+  // No manual BEGIN/COMMIT: @tauri-apps/plugin-sql runs each execute() on a separate
+  // pooled connection, so a transaction split across calls fails with "cannot commit -
+  // no transaction is active". Run sequentially instead. The brief window where no row
+  // is is_current is self-healing — the next regenerate re-establishes exactly one.
+  await db.execute("UPDATE taste_profile SET is_current = 0 WHERE is_current = 1");
+  const res = await db.execute(
+    `INSERT INTO taste_profile (generated_at, profile_json, profile_text, trigger_reason, is_current)
+     VALUES ($1,$2,$3,$4,1)`,
+    [Math.floor(Date.now() / 1000), JSON.stringify(p.profile_json), p.profile_text, trigger]
+  );
+  return res.lastInsertId as number;
 }
 
 function rowToProfile(r: any): StoredProfile {
