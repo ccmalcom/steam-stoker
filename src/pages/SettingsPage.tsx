@@ -3,6 +3,7 @@ import { getSetting, setSetting, getLibraryPaths, setLibraryPaths } from "../lib
 import { runFullSync } from "../lib/steam/sync";
 import { enrichPending } from "../lib/steam/enrich";
 import { resolveVanityUrl } from "../lib/steam/webapi";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 export default function SettingsPage() {
   const [steamKey, setSteamKey] = useState("");
@@ -45,7 +46,7 @@ export default function SettingsPage() {
   return (
     <div className="page">
       <h2>Settings</h2>
-      <label>Steam Web API key <a href="https://steamcommunity.com/dev/apikey" target="_blank">get one</a>
+      <label>Steam Web API key <a href="https://steamcommunity.com/dev/apikey" onClick={e => { e.preventDefault(); openUrl("https://steamcommunity.com/dev/apikey"); }}>get one</a>
         <input type="password" value={steamKey} onChange={e => setSteamKey(e.target.value)} /></label>
       <label>SteamID64
         <input value={steamId} onChange={e => setSteamId(e.target.value)} /></label>

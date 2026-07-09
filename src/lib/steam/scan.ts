@@ -1,4 +1,5 @@
 import { readTextFile, readDir, exists } from "@tauri-apps/plugin-fs";
+import { invoke } from "@tauri-apps/api/core";
 import { parseAppManifest, parseLibraryFolders, type InstalledApp } from "./acf";
 
 export interface FsAdapter {
@@ -14,6 +15,16 @@ export const tauriFs: FsAdapter = {
 };
 
 export const DEFAULT_STEAM_ROOT = "C:\\Program Files (x86)\\Steam";
+
+/** Steam's install dir from the OS registry (via the `steam_path` Rust command),
+ *  normalized to backslashes; null when unknown. Falls back to DEFAULT_STEAM_ROOT at the call site. */
+export async function detectSteamRoot(): Promise<string | null> {
+  try {
+    const p = await invoke<string | null>("steam_path");
+    if (!p || !p.trim()) return null;
+    return p.replace(/\//g, "\\").replace(/\\+$/, "");
+  } catch { return null; }
+}
 
 export async function discoverLibraryPaths(fs: FsAdapter, steamRoot = DEFAULT_STEAM_ROOT): Promise<string[]> {
   try {

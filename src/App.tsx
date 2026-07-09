@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import RecommendPage from "./pages/RecommendPage";
 import LibraryPage from "./pages/LibraryPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
+import OnboardingWizard from "./pages/OnboardingWizard";
+import { isOnboardingComplete } from "./lib/onboarding";
 import "./App.css";
 
 export default function App() {
   const [tab, setTab] = useState<"recommend" | "library" | "profile" | "settings">("recommend");
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  useEffect(() => { isOnboardingComplete().then(setOnboarded); }, []);
+
+  if (onboarded === null) return null;
+  if (!onboarded) return <OnboardingWizard onFinished={() => setOnboarded(true)} />;
   return (
     <main>
       <nav className="row">
