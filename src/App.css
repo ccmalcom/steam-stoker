@@ -128,3 +128,5 @@ button {
 .origin { opacity: .6; font-size: .85em; }
 .error { color: #c33; } .warn { color: #b80; }
 button.active { outline: 2px solid #58a; }
+
+.profile-text { white-space: pre-wrap; background: #4441; padding: 1rem; border-radius: 8px; }
