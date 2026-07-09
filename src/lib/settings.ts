@@ -12,6 +12,28 @@ export async function getSetting(key: string): Promise<string | null> {
   return rows.length ? rows[0].value : null;
 }
 
+/**
+ * Read a setting, treating empty/whitespace-only as unset (→ undefined).
+ * Use this instead of `getSetting(k) ?? default` for any setting with a meaningful
+ * default: the settings UI stores blank fields as "", which `??` does NOT catch.
+ */
+export async function getOptionalSetting(key: string): Promise<string | undefined> {
+  const v = (await getSetting(key))?.trim();
+  return v ? v : undefined;
+}
+
+/**
+ * Read a numeric setting, falling back when unset/empty/non-numeric (and, when
+ * `requirePositive`, on values ≤ 0). Guards the empty-string trap for number settings.
+ */
+export async function getNumberSetting(key: string, fallback: number, requirePositive = false): Promise<number> {
+  const raw = (await getSetting(key))?.trim();
+  if (!raw) return fallback;   // missing/empty/whitespace — Number("") is 0, so guard before parsing
+  const n = Number(raw);
+  if (!Number.isFinite(n) || (requirePositive && n <= 0)) return fallback;
+  return n;
+}
+
 export async function setSetting(key: string, value: string): Promise<void> {
   const db = await getDb();
   await db.execute(

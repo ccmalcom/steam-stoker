@@ -1,5 +1,5 @@
 import { getDb } from "../db";
-import { getSetting } from "../settings";
+import { getSetting, getOptionalSetting, getNumberSetting } from "../settings";
 import { currentProfile, regenerateProfile } from "../profile/store";
 import { loadLibraryWithMeta } from "../library";
 import { scoreBacklog } from "./stage1";
@@ -14,13 +14,11 @@ export interface RecRun {
 export async function runRecommendation(mode: RecMode, mood?: string): Promise<RecRun> {
   const anthropicKey = await getSetting("anthropic_api_key");
   const rawgKey = await getSetting("rawg_api_key");
-  // Empty/whitespace must become undefined (not "") so claudeComplete's DEFAULT_MODEL applies —
-  // an empty model string reaches Anthropic as `model: ""` and 400s. `??` wouldn't catch "".
-  const model = (await getSetting("anthropic_model"))?.trim() || undefined;
-  // Guard empty/NaN/≤0: an unset field stores "" (not null), Number("")===0, and a 0-hour
-  // threshold excludes every game from the backlog. `?? "2"` wouldn't catch "". Default to 2.
-  const parsedThreshold = Number((await getSetting("playtime_threshold_hours"))?.trim());
-  const thresholdHours = Number.isFinite(parsedThreshold) && parsedThreshold > 0 ? parsedThreshold : 2;
+  // getOptionalSetting/getNumberSetting guard the empty-string trap (blank fields store "",
+  // which `??` doesn't catch): empty model → undefined so claudeComplete's DEFAULT_MODEL
+  // applies (else Anthropic 400s on model:""); empty/≤0 threshold → 2 (else backlog is empty).
+  const model = await getOptionalSetting("anthropic_model");
+  const thresholdHours = await getNumberSetting("playtime_threshold_hours", 2, true);
 
   const profile = (await currentProfile()) ?? (await regenerateProfile("manual"));
   const library = await loadLibraryWithMeta();

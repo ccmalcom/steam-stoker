@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { runRecommendation } from "./run";
 import { getDb } from "../db";
-import { getSetting } from "../settings";
+import { getSetting, getOptionalSetting, getNumberSetting } from "../settings";
 import { loadLibraryWithMeta } from "../library";
 import { scoreBacklog } from "./stage1";
 import { discoverCandidates } from "./discovery";
@@ -9,7 +9,7 @@ import { rerank, fallbackRank } from "./rerank";
 import { currentProfile, regenerateProfile } from "../profile/store";
 
 vi.mock("../db", () => ({ getDb: vi.fn() }));
-vi.mock("../settings", () => ({ getSetting: vi.fn() }));
+vi.mock("../settings", () => ({ getSetting: vi.fn(), getOptionalSetting: vi.fn(), getNumberSetting: vi.fn() }));
 vi.mock("../library", () => ({ loadLibraryWithMeta: vi.fn() }));
 vi.mock("./stage1", () => ({ scoreBacklog: vi.fn() }));
 vi.mock("./discovery", () => ({ discoverCandidates: vi.fn() }));
@@ -33,6 +33,16 @@ function mockSettings(overrides: Record<string, string | null> = {}) {
     playtime_threshold_hours: null, ...overrides,
   };
   vi.mocked(getSetting).mockImplementation(async (key: string) => values[key] ?? null);
+  // Mirror the real accessors' coercion over the mocked values so run.ts wiring is exercised faithfully.
+  vi.mocked(getOptionalSetting).mockImplementation(async (key: string) => {
+    const v = values[key]?.trim(); return v ? v : undefined;
+  });
+  vi.mocked(getNumberSetting).mockImplementation(async (key: string, fallback: number, requirePositive = false) => {
+    const raw = values[key]?.trim();
+    if (!raw) return fallback;
+    const n = Number(raw);
+    return !Number.isFinite(n) || (requirePositive && n <= 0) ? fallback : n;
+  });
 }
 
 beforeEach(() => {
