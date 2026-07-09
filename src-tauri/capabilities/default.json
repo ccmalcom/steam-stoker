@@ -23,6 +23,14 @@
         { "url": "https://shared.akamai.steamstatic.com/*" }
       ]
     },
-    { "identifier": "opener:allow-open-url", "allow": [{ "url": "steam://*" }] }
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        { "url": "steam://*" },
+        { "url": "https://store.steampowered.com/*" },
+        { "url": "https://steamcommunity.com/*" },
+        { "url": "https://rawg.io/*" }
+      ]
+    }
   ]
 }

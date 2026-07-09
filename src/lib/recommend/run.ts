@@ -14,8 +14,13 @@ export interface RecRun {
 export async function runRecommendation(mode: RecMode, mood?: string): Promise<RecRun> {
   const anthropicKey = await getSetting("anthropic_api_key");
   const rawgKey = await getSetting("rawg_api_key");
-  const model = (await getSetting("anthropic_model")) ?? undefined;
-  const thresholdHours = Number((await getSetting("playtime_threshold_hours")) ?? "2");
+  // Empty/whitespace must become undefined (not "") so claudeComplete's DEFAULT_MODEL applies —
+  // an empty model string reaches Anthropic as `model: ""` and 400s. `??` wouldn't catch "".
+  const model = (await getSetting("anthropic_model"))?.trim() || undefined;
+  // Guard empty/NaN/≤0: an unset field stores "" (not null), Number("")===0, and a 0-hour
+  // threshold excludes every game from the backlog. `?? "2"` wouldn't catch "". Default to 2.
+  const parsedThreshold = Number((await getSetting("playtime_threshold_hours"))?.trim());
+  const thresholdHours = Number.isFinite(parsedThreshold) && parsedThreshold > 0 ? parsedThreshold : 2;
 
   const profile = (await currentProfile()) ?? (await regenerateProfile("manual"));
   const library = await loadLibraryWithMeta();
@@ -67,7 +72,7 @@ export async function runRecommendation(mode: RecMode, mood?: string): Promise<R
 
 export async function recordFeedback(
   recId: number, title: string,
-  feedback: "launched" | "dismissed_not_interested" | "dismissed_wont_run"
+  feedback: "launched" | "dismissed_not_interested" | "dismissed_wont_run" | "already_played"
 ): Promise<void> {
   const db = await getDb();
   const rows = await db.select<{ feedback_json: string }[]>(

@@ -26,10 +26,25 @@ export async function claudeComplete(opts: {
   for (let round = 0; round <= maxToolRounds; round++) {
     const res = await fetchFn(API, {
       method: "POST",
-      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+        // Requests from the Tauri webview carry a browser Origin, which Anthropic rejects
+        // with HTTP 401 unless this opt-in header is present. Safe here: the key lives on
+        // the user's own machine, not shipped to third-party browsers.
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
       body: JSON.stringify({ model, max_tokens: maxTokens, system, messages, ...(tools ? { tools } : {}) }),
     });
-    if (!res.ok) throw new AnthropicError(res.status, `Anthropic API: HTTP ${res.status}`);
+    if (!res.ok) {
+      let detail = "";
+      try {
+        const errBody = await res.json();
+        detail = errBody?.error?.message ? `: ${errBody.error.message}` : "";
+      } catch { /* non-JSON error body: fall back to bare status */ }
+      throw new AnthropicError(res.status, `Anthropic API: HTTP ${res.status}${detail}`);
+    }
     const body = await res.json();
 
     if (body.stop_reason !== "tool_use") {

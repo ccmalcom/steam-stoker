@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Game, GameStatus } from "../lib/types";
 import { launchGame } from "../lib/games";
 import { rateGame, setGameStatus } from "../lib/ratings";
+import StarRating from "./StarRating";
 
 export default function GameRow({ game, genres, onChanged }:
   { game: Game; genres: string | null; onChanged: () => void }) {
@@ -27,13 +28,15 @@ export default function GameRow({ game, genres, onChanged }:
 
   return (
     <>
-      <tr className={game.status !== "active" ? "muted" : ""}>
+      <tr className={game.status === "not_interested" || game.status === "wont_run" ? "muted" : ""}>
         <td>{game.title}{game.source === "manual" ? ` (${game.platform})` : ""}</td>
         <td>{hours} h</td>
         <td>{game.installed ? "✔" : ""}</td>
         <td>
-          {[1, 2, 3, 4, 5].map(n =>
-            <span key={n} className="star" onClick={() => setStars(n)}>{rating && n <= rating ? "★" : "☆"}</span>)}
+          <span className="row" style={{ gap: 0 }}>
+            <StarRating value={rating ?? 0} onChange={setStars} showValue />
+            {rating !== null && <button type="button" className="star-clear" onClick={() => setStars(rating)} title="Clear rating">clear</button>}
+          </span>
           {ratingError && <div style={{ color: "red", fontSize: "0.8em" }}>{ratingError}</div>}
         </td>
         <td>{genres ? (JSON.parse(genres) as string[]).slice(0, 3).join(", ") : ""}</td>

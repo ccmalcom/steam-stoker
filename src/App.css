@@ -122,9 +122,30 @@ button {
 .page table { width: 100%; border-collapse: collapse; }
 .page td { padding: .25rem .5rem; border-bottom: 1px solid #4443; }
 .star { cursor: pointer; }
+.stars { display: inline-flex; align-items: center; line-height: 1; font-size: 1.1rem; }
+/* Interactive widgets grow on hover so the half-star click zones are easy to hit. */
+.stars.interactive { font-size: 1.25rem; transform-origin: left center; transition: transform .1s ease; }
+.stars.interactive:hover { transform: scale(1.4); }
+.star-wrap { position: relative; display: inline-block; width: 1em; height: 1em; }
+.star-value { font-size: .65em; opacity: .6; margin-left: .4em; font-variant-numeric: tabular-nums; }
+.star-bg, .star-fg { position: absolute; top: 0; left: 0; height: 100%; overflow: hidden; white-space: nowrap; pointer-events: none; }
+.star-bg { color: #888; }
+.star-fg { color: gold; width: 0; }
+.star-half { position: absolute; top: 0; height: 100%; width: 50%; padding: 0; margin: 0; background: transparent; border: 0; cursor: pointer; }
+.star-half.left { left: 0; }
+.star-half.right { right: 0; }
+.star-clear { cursor: pointer; opacity: .45; font-size: .75em; margin-left: .5em;
+  background: none; border: 0; padding: 0; color: inherit; }
+.star-clear:hover { opacity: .9; text-decoration: underline; }
+.linklike { background: none; border: 0; padding: 0; color: #6ab7ff; cursor: pointer; font: inherit; text-align: left; }
+.linklike:hover { text-decoration: underline; }
 .muted { opacity: .45; }
+.hint { font-size: .85em; opacity: .7; line-height: 1.5; }
+.hint code { font-size: .95em; opacity: .9; }
 .card { border: 1px solid #4444; border-radius: 8px; padding: .75rem 1rem; margin: .75rem 0; }
 .card-head { display: flex; justify-content: space-between; }
 .origin { opacity: .6; font-size: .85em; }
 .error { color: #c33; } .warn { color: #b80; }
 button.active { outline: 2px solid #58a; }
+
+.profile-text { white-space: pre-wrap; background: #4441; padding: 1rem; border-radius: 8px; }

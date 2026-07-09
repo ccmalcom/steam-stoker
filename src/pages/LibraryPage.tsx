@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { listGames, type LibraryFilter } from "../lib/games";
 import type { Game } from "../lib/types";
 import GameRow from "../components/GameRow";
+import ManualAddForm from "../components/ManualAddForm";
 
 export default function LibraryPage() {
   const [filter, setFilter] = useState<LibraryFilter>({ sort: "playtime" });
   const [games, setGames] = useState<(Game & { genres: string | null })[]>([]);
+  const [showAdd, setShowAdd] = useState(false);
 
   useEffect(() => { listGames(filter).then(setGames); }, [filter]);
   const reload = () => listGames(filter).then(setGames);
@@ -23,7 +25,9 @@ export default function LibraryPage() {
           <option value="last_played">Recently played</option>
           <option value="rating">Rating</option>
         </select>
+        <button onClick={() => setShowAdd(s => !s)}>{showAdd ? "Close" : "Add game"}</button>
       </div>
+      {showAdd && <ManualAddForm onAdded={reload} />}
       {games.length === 0
         ? <p>No games yet — set your Steam key in Settings and hit Sync.</p>
         : <table><tbody>{games.map(g => <GameRow key={g.id} game={g} genres={g.genres} onChanged={reload} />)}</tbody></table>}

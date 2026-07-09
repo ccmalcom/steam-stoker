@@ -70,6 +70,18 @@ describe("runRecommendation", () => {
     ]);
   });
 
+  it("defaults the backlog playtime threshold to 2h when the setting is empty (not 0)", async () => {
+    mockSettings({ playtime_threshold_hours: "" });   // empty string, as the settings UI stores it
+    await runRecommendation("backlog");
+    expect(vi.mocked(scoreBacklog).mock.calls[0][2]).toEqual({ playtimeThresholdHours: 2 });
+  });
+
+  it("honors a valid backlog playtime threshold setting", async () => {
+    mockSettings({ playtime_threshold_hours: "10" });
+    await runRecommendation("backlog");
+    expect(vi.mocked(scoreBacklog).mock.calls[0][2]).toEqual({ playtimeThresholdHours: 10 });
+  });
+
   it("discovery mode with no Anthropic key throws before calling discoverCandidates", async () => {
     mockSettings();
 

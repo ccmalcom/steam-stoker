@@ -3,8 +3,10 @@ import type { GameStatus } from "./types";
 
 export function validateRating(rating: number | null): void {
   if (rating === null) return;
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5)
-    throw new RangeError(`rating must be null or an integer 1-5, got ${rating}`);
+  // Half-step ratings 0.5–5. `rating * 2` is an exact integer for valid halves
+  // (0.5, 1, 1.5, …, 5) since halves are representable in binary floating point.
+  if (rating < 0.5 || rating > 5 || !Number.isInteger(rating * 2))
+    throw new RangeError(`rating must be null or a half-step between 0.5 and 5, got ${rating}`);
 }
 
 /** Append-only history + current-value mirror, single call path (spec: rating_events). */
